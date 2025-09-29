@@ -13,6 +13,8 @@ import com.lusa.fluidwallpaper.PreviewActivity
 import com.lusa.fluidwallpaper.databinding.FragmentThreeBinding
 import com.lusa.fluidwallpaper.viewmodel.FluidViewModel
 import com.lusa.fluidwallpaper.utils.WallpaperUtils
+import com.lusa.fluidwallpaper.utils.ColorPreferences
+import com.lusa.fluidwallpaper.utils.SettingsPreferences
 
 class ThreeFragment : BaseFragment<FragmentThreeBinding>(FragmentThreeBinding::inflate) {
     private lateinit var viewModel: FluidViewModel
@@ -179,14 +181,34 @@ class ThreeFragment : BaseFragment<FragmentThreeBinding>(FragmentThreeBinding::i
     }
     
     private fun saveCurrentSettings() {
-        val preferences = android.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
         val currentPreset = viewModel.getCurrentPreset()
-        
+
+        // Ghi thiết lập trung tâm (service sẽ poll từ đây)
+        val clampedSpeed = currentPreset.speed.coerceIn(0.1f, 5.0f)
+        val clampedViscosity = currentPreset.viscosity.coerceIn(0.1f, 3.0f)
+        val clampedTurbulence = currentPreset.turbulence.coerceIn(0.0f, 1.0f)
+        SettingsPreferences.saveSettings(
+            requireContext(),
+            0, // chỉ hỗ trợ effect 0 hiện tại
+            clampedSpeed,
+            clampedViscosity,
+            clampedTurbulence
+        )
+
+        // Lưu màu với timestamp để service cập nhật ngay
+        ColorPreferences.saveColors(
+            requireContext(),
+            currentPreset.color1,
+            currentPreset.color2
+        )
+
+        // (Tùy chọn) vẫn ghi ra DefaultSharedPreferences cho các phần khác của app nếu có dùng
+        val preferences = android.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
         preferences.edit().apply {
-            putInt("effect_type", currentPreset.effectType)
-            putFloat("speed", currentPreset.speed)
-            putFloat("viscosity", currentPreset.viscosity)
-            putFloat("turbulence", currentPreset.turbulence)
+            putInt("effect_type", 0)
+            putFloat("speed", clampedSpeed)
+            putFloat("viscosity", clampedViscosity)
+            putFloat("turbulence", clampedTurbulence)
             putFloat("color1_r", currentPreset.color1[0])
             putFloat("color1_g", currentPreset.color1[1])
             putFloat("color1_b", currentPreset.color1[2])

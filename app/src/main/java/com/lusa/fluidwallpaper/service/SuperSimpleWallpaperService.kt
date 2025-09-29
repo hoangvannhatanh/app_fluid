@@ -15,6 +15,7 @@ import android.provider.Settings
 import kotlin.random.Random
 import com.lusa.fluidwallpaper.model.Particle
 import com.lusa.fluidwallpaper.utils.ColorPreferences
+import com.lusa.fluidwallpaper.utils.SettingsPreferences
 
 class SuperSimpleWallpaperService : WallpaperService() {
     
@@ -43,7 +44,14 @@ class SuperSimpleWallpaperService : WallpaperService() {
         private var color1 = floatArrayOf(0.2f, 0.6f, 1.0f)
         private var color2 = floatArrayOf(0.8f, 0.2f, 0.9f)
         private var lastColorUpdateTime = 0L
-        private var lastKnownUpdateTime = 0L
+        private var lastKnownColorUpdateTime = 0L
+
+        // Effect settings
+        private var effectType: Int = 0
+        private var speed: Float = 1.0f
+        private var viscosity: Float = 1.0f
+        private var turbulence: Float = 0.5f
+        private var lastKnownSettingsUpdateTime = 0L
         
         override fun onCreate(surfaceHolder: SurfaceHolder?) {
             super.onCreate(surfaceHolder)
@@ -65,9 +73,10 @@ class SuperSimpleWallpaperService : WallpaperService() {
             super.onVisibilityChanged(visible)
             isVisible = visible
             if (visible) {
-                // Reload colors when becoming visible (in case they were changed)
-                Log.d("SuperSimpleWallpaper", "onVisibilityChanged - becoming visible, reloading colors")
+                // Reload colors/settings when becoming visible (in case they were changed)
+                Log.d("SuperSimpleWallpaper", "onVisibilityChanged - becoming visible, reloading colors and settings")
                 loadColors()
+                loadSettings()
                 refreshParticles() // Update existing particles with new colors
                 startRendering()
             } else {
@@ -208,9 +217,9 @@ class SuperSimpleWallpaperService : WallpaperService() {
             // Check if colors have been updated by checking timestamp
             val currentUpdateTime = ColorPreferences.getLastUpdateTime(this@SuperSimpleWallpaperService)
             
-            Log.d("SuperSimpleWallpaper", "checkForColorUpdates - currentUpdateTime=$currentUpdateTime, lastKnownUpdateTime=$lastKnownUpdateTime")
+            Log.d("SuperSimpleWallpaper", "checkForColorUpdates - currentUpdateTime=$currentUpdateTime, lastKnownUpdateTime=$lastKnownColorUpdateTime")
             
-            if (currentUpdateTime > lastKnownUpdateTime) {
+            if (currentUpdateTime > lastKnownColorUpdateTime) {
                 Log.d("SuperSimpleWallpaper", "Colors updated, reloading...")
                 loadColors()
                 refreshParticles()
@@ -234,8 +243,8 @@ class SuperSimpleWallpaperService : WallpaperService() {
         private fun loadColors() {
             color1 = ColorPreferences.getColor1(this@SuperSimpleWallpaperService)
             color2 = ColorPreferences.getColor2(this@SuperSimpleWallpaperService)
-            lastKnownUpdateTime = ColorPreferences.getLastUpdateTime(this@SuperSimpleWallpaperService)
-            Log.d("SuperSimpleWallpaper", "loadColors - color1=[${color1[0]}, ${color1[1]}, ${color1[2]}], color2=[${color2[0]}, ${color2[1]}, ${color2[2]}], timestamp=$lastKnownUpdateTime")
+            lastKnownColorUpdateTime = ColorPreferences.getLastUpdateTime(this@SuperSimpleWallpaperService)
+            Log.d("SuperSimpleWallpaper", "loadColors - color1=[${color1[0]}, ${color1[1]}, ${color1[2]}], color2=[${color2[0]}, ${color2[1]}, ${color2[2]}], timestamp=$lastKnownColorUpdateTime")
         }
         
         private fun getRandomColor(): Int {
@@ -246,6 +255,28 @@ class SuperSimpleWallpaperService : WallpaperService() {
                 (colorArray[1] * 255).toInt(),
                 (colorArray[2] * 255).toInt()
             )
+        }
+        
+        private fun loadSettings() {
+            // Đọc và ràng buộc giá trị an toàn
+            val rawEffect = SettingsPreferences.getEffectType(this@SuperSimpleWallpaperService)
+            val rawSpeed = SettingsPreferences.getSpeed(this@SuperSimpleWallpaperService)
+            val rawViscosity = SettingsPreferences.getViscosity(this@SuperSimpleWallpaperService)
+            val rawTurbulence = SettingsPreferences.getTurbulence(this@SuperSimpleWallpaperService)
+
+            effectType = 0 // hiện chỉ hỗ trợ effect 0
+            speed = rawSpeed.coerceIn(0.1f, 5.0f)
+            viscosity = rawViscosity.coerceIn(0.1f, 3.0f)
+            turbulence = rawTurbulence.coerceIn(0.0f, 1.0f)
+            lastKnownSettingsUpdateTime = SettingsPreferences.getLastUpdateTime(this@SuperSimpleWallpaperService)
+        }
+        
+        private fun checkForSettingsUpdates() {
+            // Chỉ reload nếu timestamp thay đổi (tránh đọc prefs liên tục)
+            val currentUpdateTime = SettingsPreferences.getLastUpdateTime(this@SuperSimpleWallpaperService)
+            if (currentUpdateTime > lastKnownSettingsUpdateTime) {
+                loadSettings()
+            }
         }
         
         private fun startRendering() {
@@ -283,10 +314,11 @@ class SuperSimpleWallpaperService : WallpaperService() {
                     val currentTime = System.currentTimeMillis()
                     if (currentTime - lastColorUpdateTime > 100) {
                         checkForColorUpdates()
+                        checkForSettingsUpdates()
                         lastColorUpdateTime = currentTime
                     }
                     
-                    // Update main particles (COMPLETELY ISOLATED)
+                    // Update main particles
                     updateParticles()
                     drawParticles(canvas)
                     
@@ -322,7 +354,7 @@ class SuperSimpleWallpaperService : WallpaperService() {
                         particle.vy += normalizedDy * attractionForce
                         
                         // Add orbital motion (tangential to the circle)
-                        val orbitalSpeed = 0.015f
+                        val orbitalSpeed = 0.015f * (0.5f + turbulence)
                         val tangentX = -normalizedDy * orbitalSpeed
                         val tangentY = normalizedDx * orbitalSpeed
                         
@@ -331,7 +363,7 @@ class SuperSimpleWallpaperService : WallpaperService() {
                         
                         // Limit speed
                         val currentSpeed = kotlin.math.sqrt(particle.vx * particle.vx + particle.vy * particle.vy)
-                        val maxSpeed = 0.05f
+                        val maxSpeed = 0.05f * (0.5f + speed)
                         if (currentSpeed > maxSpeed) {
                             particle.vx = (particle.vx / currentSpeed) * maxSpeed
                             particle.vy = (particle.vy / currentSpeed) * maxSpeed
@@ -340,7 +372,7 @@ class SuperSimpleWallpaperService : WallpaperService() {
                 } else {
                     // NORMAL MODE: Return to normal movement
                     val currentSpeed = kotlin.math.sqrt(particle.vx * particle.vx + particle.vy * particle.vy)
-                    val targetSpeed = 0.04f
+                    val targetSpeed = 0.04f * speed
                     
                     // Gradually return to normal speed
                     if (kotlin.math.abs(currentSpeed - targetSpeed) > 0.001f) {

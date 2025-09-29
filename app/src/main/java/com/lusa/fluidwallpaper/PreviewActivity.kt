@@ -3,6 +3,7 @@ package com.lusa.fluidwallpaper
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory
 import com.lusa.fluidwallpaper.databinding.ActivityPreviewBinding
 import com.lusa.fluidwallpaper.viewmodel.FluidViewModel
 
@@ -16,7 +17,7 @@ class PreviewActivity : AppCompatActivity() {
         binding = ActivityPreviewBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
-        viewModel = ViewModelProvider(this)[FluidViewModel::class.java]
+        viewModel = ViewModelProvider(this, AndroidViewModelFactory.getInstance(application))[FluidViewModel::class.java]
         
         setupPreview()
         setupControls()

@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory
 import com.lusa.fluidwallpaper.BaseFragment
 import com.lusa.fluidwallpaper.PreviewActivity
 import com.lusa.fluidwallpaper.databinding.FragmentThreeBinding
@@ -23,7 +24,7 @@ class ThreeFragment : BaseFragment<FragmentThreeBinding>(FragmentThreeBinding::i
     }
 
     override fun bindComponent() {
-        viewModel = ViewModelProvider(requireActivity())[FluidViewModel::class.java]
+        viewModel = ViewModelProvider(requireActivity(), AndroidViewModelFactory.getInstance(requireActivity().application))[FluidViewModel::class.java]
 
         setupControls()
         setupPreview()

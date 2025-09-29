@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory
 import androidx.recyclerview.widget.GridLayoutManager
 import com.lusa.fluidwallpaper.BaseFragment
 import com.lusa.fluidwallpaper.R
@@ -24,7 +25,7 @@ class OneFragment : BaseFragment<FragmentOneBinding>(FragmentOneBinding::inflate
     )
 
     override fun bindComponent() {
-        viewModel = ViewModelProvider(requireActivity())[FluidViewModel::class.java]
+        viewModel = ViewModelProvider(requireActivity(), AndroidViewModelFactory.getInstance(requireActivity().application))[FluidViewModel::class.java]
 
         setupRecyclerView()
         setupPreview()

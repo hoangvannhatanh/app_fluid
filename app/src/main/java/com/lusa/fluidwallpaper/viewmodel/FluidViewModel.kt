@@ -1,11 +1,14 @@
 package com.lusa.fluidwallpaper.viewmodel
 
+import android.app.Application
+import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import com.lusa.fluidwallpaper.model.Preset
+import com.lusa.fluidwallpaper.utils.ColorPreferences
 
-class FluidViewModel : ViewModel() {
+class FluidViewModel(application: Application) : AndroidViewModel(application) {
     
     // Effect parameters - Only Particle Flow (effect type 0)
     private val _effectType = MutableLiveData<Int>(0)
@@ -70,11 +73,21 @@ class FluidViewModel : ViewModel() {
     }
     
     fun setColor1(color: FloatArray) {
+        Log.d("FluidViewModel", "setColor1 called: r=${color[0]}, g=${color[1]}, b=${color[2]}")
         _color1.value = color.clone()
+        // Save to SharedPreferences for wallpaper service
+        val color2 = _color2.value ?: floatArrayOf(0.8f, 0.2f, 0.9f) // Default color2
+        Log.d("FluidViewModel", "setColor1 - saving to SharedPreferences: color1=[${color[0]}, ${color[1]}, ${color[2]}], color2=[${color2[0]}, ${color2[1]}, ${color2[2]}]")
+        ColorPreferences.saveColors(getApplication(), color.clone(), color2)
     }
     
     fun setColor2(color: FloatArray) {
+        Log.d("FluidViewModel", "setColor2 called: r=${color[0]}, g=${color[1]}, b=${color[2]}")
         _color2.value = color.clone()
+        // Save to SharedPreferences for wallpaper service
+        val color1 = _color1.value ?: floatArrayOf(0.2f, 0.6f, 1.0f) // Default color1
+        Log.d("FluidViewModel", "setColor2 - saving to SharedPreferences: color1=[${color1[0]}, ${color1[1]}, ${color1[2]}], color2=[${color[0]}, ${color[1]}, ${color[2]}]")
+        ColorPreferences.saveColors(getApplication(), color1, color.clone())
     }
     
     fun setBatterySaveMode(enabled: Boolean) {

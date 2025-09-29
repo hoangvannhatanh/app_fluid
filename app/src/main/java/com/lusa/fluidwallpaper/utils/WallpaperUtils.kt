@@ -4,6 +4,7 @@ import android.app.WallpaperManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
@@ -12,84 +13,16 @@ import com.lusa.fluidwallpaper.service.SuperSimpleWallpaperService
 object WallpaperUtils {
     
     private const val TAG = "WallpaperUtils"
-    
-    /**
-     * Set live wallpaper for home screen only
-     */
-    fun setHomeScreenWallpaper(context: Context): Boolean {
-        return try {
-            val intent = Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER)
-            intent.putExtra(
-                WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,
-                ComponentName(context, SuperSimpleWallpaperService::class.java)
-            )
-            
-            if (intent.resolveActivity(context.packageManager) != null) {
-                context.startActivity(intent)
-                Toast.makeText(context, "Đang mở wallpaper picker cho màn hình chính...", Toast.LENGTH_SHORT).show()
-                true
-            } else {
-                // Fallback method
-                val fallbackIntent = Intent(WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER)
-                context.startActivity(fallbackIntent)
-                Toast.makeText(context, "Vui lòng chọn 'Fluid Wallpaper' từ danh sách", Toast.LENGTH_LONG).show()
-                true
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error setting home screen wallpaper", e)
-            Toast.makeText(context, "Lỗi: ${e.message}", Toast.LENGTH_LONG).show()
-            false
-        }
-    }
-    
-    /**
-     * Set live wallpaper for lock screen only (Android 7.1+)
-     */
-    fun setLockScreenWallpaper(context: Context): Boolean {
-        return try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-                // For Android 7.1+ we can use the lock screen specific intent
-                val intent = Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER)
-                intent.putExtra(
-                    WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,
-                    ComponentName(context, SuperSimpleWallpaperService::class.java)
-                )
-                intent.putExtra("android.service.wallpaper.extra.LIVE_WALLPAPER_COMPONENT", 
-                    ComponentName(context, SuperSimpleWallpaperService::class.java))
-                
-                // Try to set for lock screen specifically
-                intent.putExtra("android.service.wallpaper.extra.LOCK_SCREEN", true)
-                
-                if (intent.resolveActivity(context.packageManager) != null) {
-                    context.startActivity(intent)
-                    Toast.makeText(context, "Đang mở wallpaper picker cho màn hình khóa...", Toast.LENGTH_SHORT).show()
-                    true
-                } else {
-                    // Fallback: Open general wallpaper picker
-                    openWallpaperPicker(context, "lock")
-                    true
-                }
-            } else {
-                // For older Android versions, use general method
-                openWallpaperPicker(context, "lock")
-                true
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error setting lock screen wallpaper", e)
-            Toast.makeText(context, "Lỗi: ${e.message}", Toast.LENGTH_LONG).show()
-            false
-        }
-    }
-    
-    /**
-     * Set live wallpaper for both home and lock screen
-     */
+
     fun setBothScreenWallpaper(context: Context): Boolean {
         return try {
+            val serviceComponent = ComponentName(context, SuperSimpleWallpaperService::class.java)
+            Log.d(TAG, "Setting wallpaper for both screens with service: ${serviceComponent.className}")
+            
             val intent = Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER)
             intent.putExtra(
                 WallpaperManager.EXTRA_LIVE_WALLPAPER_COMPONENT,
-                ComponentName(context, SuperSimpleWallpaperService::class.java)
+                serviceComponent
             )
             
             if (intent.resolveActivity(context.packageManager) != null) {

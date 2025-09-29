@@ -14,6 +14,7 @@ import android.os.Build
 import android.provider.Settings
 import kotlin.random.Random
 import com.lusa.fluidwallpaper.model.Particle
+import com.lusa.fluidwallpaper.utils.ColorPreferences
 
 class SuperSimpleWallpaperService : WallpaperService() {
     
@@ -38,10 +39,19 @@ class SuperSimpleWallpaperService : WallpaperService() {
         private var touchX = 0f
         private var touchY = 0f
         
+        // Colors from SharedPreferences
+        private var color1 = floatArrayOf(0.2f, 0.6f, 1.0f)
+        private var color2 = floatArrayOf(0.8f, 0.2f, 0.9f)
+        private var lastColorUpdateTime = 0L
+        private var lastKnownUpdateTime = 0L
+        
         override fun onCreate(surfaceHolder: SurfaceHolder?) {
             super.onCreate(surfaceHolder)
             this.surfaceHolder = surfaceHolder
             setTouchEventsEnabled(true) // ENABLE TOUCH FOR VISUAL EFFECTS
+            
+            // Load colors from SharedPreferences
+            loadColors()
             
             // Samsung-specific initialization
             Log.d("SuperSimpleWallpaper", "Device: ${Build.MANUFACTURER} ${Build.MODEL}")
@@ -55,6 +65,10 @@ class SuperSimpleWallpaperService : WallpaperService() {
             super.onVisibilityChanged(visible)
             isVisible = visible
             if (visible) {
+                // Reload colors when becoming visible (in case they were changed)
+                Log.d("SuperSimpleWallpaper", "onVisibilityChanged - becoming visible, reloading colors")
+                loadColors()
+                refreshParticles() // Update existing particles with new colors
                 startRendering()
             } else {
                 stopRendering()
@@ -177,6 +191,32 @@ class SuperSimpleWallpaperService : WallpaperService() {
             }
         }
         
+        private fun refreshParticles() {
+            // Update existing particles with new colors
+            particles.forEach { particle ->
+                particle.color = getRandomColor()
+            }
+        }
+        
+        private fun forceColorUpdate() {
+            // Force reload colors and refresh all particles
+            loadColors()
+            refreshParticles()
+        }
+        
+        private fun checkForColorUpdates() {
+            // Check if colors have been updated by checking timestamp
+            val currentUpdateTime = ColorPreferences.getLastUpdateTime(this@SuperSimpleWallpaperService)
+            
+            Log.d("SuperSimpleWallpaper", "checkForColorUpdates - currentUpdateTime=$currentUpdateTime, lastKnownUpdateTime=$lastKnownUpdateTime")
+            
+            if (currentUpdateTime > lastKnownUpdateTime) {
+                Log.d("SuperSimpleWallpaper", "Colors updated, reloading...")
+                loadColors()
+                refreshParticles()
+            }
+        }
+        
         private fun createParticle(): Particle {
             val angle = Random.nextFloat() * 2 * kotlin.math.PI
             val speed = 0.04f // Slightly faster for better visibility
@@ -191,17 +231,21 @@ class SuperSimpleWallpaperService : WallpaperService() {
             )
         }
         
+        private fun loadColors() {
+            color1 = ColorPreferences.getColor1(this@SuperSimpleWallpaperService)
+            color2 = ColorPreferences.getColor2(this@SuperSimpleWallpaperService)
+            lastKnownUpdateTime = ColorPreferences.getLastUpdateTime(this@SuperSimpleWallpaperService)
+            Log.d("SuperSimpleWallpaper", "loadColors - color1=[${color1[0]}, ${color1[1]}, ${color1[2]}], color2=[${color2[0]}, ${color2[1]}, ${color2[2]}], timestamp=$lastKnownUpdateTime")
+        }
+        
         private fun getRandomColor(): Int {
-            val colors = listOf(
-                Color.parseColor("#FF6B6B"), // Red
-                Color.parseColor("#4ECDC4"), // Teal
-                Color.parseColor("#45B7D1"), // Blue
-                Color.parseColor("#96CEB4"), // Green
-                Color.parseColor("#FFEAA7"), // Yellow
-                Color.parseColor("#DDA0DD"), // Plum
-                Color.parseColor("#FFB347")  // Orange
+            // Use the colors from SharedPreferences instead of fixed colors
+            val colorArray = if (Random.nextBoolean()) color1 else color2
+            return Color.rgb(
+                (colorArray[0] * 255).toInt(),
+                (colorArray[1] * 255).toInt(),
+                (colorArray[2] * 255).toInt()
             )
-            return colors[Random.nextInt(colors.size)]
         }
         
         private fun startRendering() {
@@ -234,6 +278,13 @@ class SuperSimpleWallpaperService : WallpaperService() {
             if (canvas != null) {
                 try {
                     canvas.drawColor(Color.BLACK)
+                    
+                    // Check for color updates every 100ms for more responsive updates
+                    val currentTime = System.currentTimeMillis()
+                    if (currentTime - lastColorUpdateTime > 100) {
+                        checkForColorUpdates()
+                        lastColorUpdateTime = currentTime
+                    }
                     
                     // Update main particles (COMPLETELY ISOLATED)
                     updateParticles()

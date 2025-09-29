@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
@@ -21,7 +22,7 @@ class FourFragment : BaseFragment<FragmentFourBinding>(FragmentFourBinding::infl
     private lateinit var presetsAdapter: PresetsAdapter
 
     override fun bindComponent() {
-        viewModel = ViewModelProvider(requireActivity())[FluidViewModel::class.java]
+        viewModel = ViewModelProvider(requireActivity(), AndroidViewModelFactory.getInstance(requireActivity().application))[FluidViewModel::class.java]
 
         setupRecyclerView()
         setupButtons()

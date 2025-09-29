@@ -1,6 +1,7 @@
 package com.lusa.fluidwallpaper
 
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory
 import com.lusa.fluidwallpaper.adapter.HomeViewPagerAdapter
 import com.lusa.fluidwallpaper.databinding.ActivityMainBinding
 import com.lusa.fluidwallpaper.sensor.SensorIntegration
@@ -14,7 +15,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(R.layout.activity_main) {
     private lateinit var homeViewPagerAdapter: HomeViewPagerAdapter
 
     override fun bindComponent() {
-        viewModel = ViewModelProvider(this)[FluidViewModel::class.java]
+        viewModel = ViewModelProvider(this, AndroidViewModelFactory.getInstance(application))[FluidViewModel::class.java]
 
         initBottomView()
 

@@ -66,7 +66,7 @@
                     android:textStyle="bold"
                     android:layout_marginTop="16dp" />
 
-                <com.lusa.fluidwallpaper.widget.ColorPickerView
+                <com.skydoves.colorpickerview.ColorPickerView
                     android:id="@+id/color_picker1"
                     android:layout_width="match_parent"
                     android:layout_height="120dp"
@@ -83,7 +83,7 @@
                     android:layout_marginTop="16dp"
                     android:visibility="visible" />
 
-                <com.lusa.fluidwallpaper.widget.ColorPickerView
+                <com.skydoves.colorpickerview.ColorPickerView
                     android:id="@+id/color_picker2"
                     android:layout_width="match_parent"
                     android:layout_height="120dp"

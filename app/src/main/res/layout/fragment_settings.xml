@@ -74,7 +74,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/speed"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="@color/color_EDF1F6"
                     android:textSize="14sp"
                     android:layout_marginTop="-8dp" />
 
@@ -94,7 +94,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/viscosity"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="@color/color_EDF1F6"
                     android:textSize="14sp"
                     android:layout_marginTop="-8dp" />
 
@@ -114,7 +114,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/turbulence"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="@color/color_EDF1F6"
                     android:textSize="14sp"
                     android:layout_marginTop="-8dp" />
 
@@ -187,7 +187,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/fps_limit"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="@color/color_EDF1F6"
                     android:textSize="14sp"
                     android:layout_marginTop="-8dp" />
 
@@ -234,7 +234,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Chọn màn hình để đặt hình nền"
-                        android:textColor="@color/text_secondary"
+                        android:textColor="@color/color_EDF1F6"
                         android:textSize="14sp" />
 
                     <com.google.android.material.button.MaterialButton

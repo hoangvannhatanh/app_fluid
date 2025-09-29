@@ -39,4 +39,8 @@
     <string name="wallpaper_set_error">Lỗi khi đặt hình nền</string>
     <string name="preset_saved">Đã lưu mẫu</string>
     <string name="preset_loaded">Đã tải mẫu</string>
+    <string name="effects">Effects</string>
+    <string name="colors">Colors</string>
+    <string name="settings">Settings</string>
+    <string name="library">Library</string>
 </resources>

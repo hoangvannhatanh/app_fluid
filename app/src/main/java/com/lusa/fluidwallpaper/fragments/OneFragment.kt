@@ -13,7 +13,7 @@ import com.lusa.fluidwallpaper.databinding.FragmentEffectsBinding
 import com.lusa.fluidwallpaper.model.Effect
 import com.lusa.fluidwallpaper.viewmodel.FluidViewModel
 
-class EffectsFragment : Fragment() {
+class OneFragment : Fragment() {
     
     private var _binding: FragmentEffectsBinding? = null
     private val binding get() = _binding!!

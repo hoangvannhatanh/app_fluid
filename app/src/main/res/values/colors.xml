@@ -14,7 +14,7 @@
     <color name="background_dark">#FF121212</color>
     <color name="surface_dark">#FF1E1E1E</color>
     <color name="text_primary">#FFFFFFFF</color>
-    <color name="text_secondary">#FFB3B3B3</color>
+    <color name="color_EDF1F6">#F9F9F9</color>
     
     <!-- Fluid Colors -->
     <color name="fluid_blue">#FF2196F3</color>
@@ -25,4 +25,8 @@
     <color name="fluid_cyan">#FF00BCD4</color>
     <color name="fluid_pink">#FFE91E63</color>
     <color name="fluid_indigo">#FF3F51B5</color>
+    <color name="color_F1EEFA">#F1EEFA</color>
+    <color name="color_FF8FA8">#FF8FA8</color>
+    <color name="color_263044">#263044</color>
+    <color name="color_B4A9D2">#B4A9D2</color>
 </resources>

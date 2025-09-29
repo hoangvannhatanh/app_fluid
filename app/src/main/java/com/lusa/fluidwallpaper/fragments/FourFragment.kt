@@ -10,13 +10,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
-import com.lusa.fluidwallpaper.R
 import com.lusa.fluidwallpaper.adapter.PresetsAdapter
 import com.lusa.fluidwallpaper.databinding.FragmentPresetsBinding
 import com.lusa.fluidwallpaper.model.Preset
 import com.lusa.fluidwallpaper.viewmodel.FluidViewModel
 
-class PresetsFragment : Fragment() {
+class FourFragment : Fragment() {
     
     private var _binding: FragmentPresetsBinding? = null
     private val binding get() = _binding!!

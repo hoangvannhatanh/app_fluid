@@ -85,13 +85,13 @@
             android:layout_width="64dp"
             android:layout_height="64dp"
             android:src="@drawable/ic_presets"
-            android:tint="@color/text_secondary" />
+            android:tint="@color/color_EDF1F6" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Chưa có mẫu nào"
-            android:textColor="@color/text_secondary"
+            android:textColor="@color/color_EDF1F6"
             android:textSize="16sp"
             android:layout_marginTop="16dp" />
 
@@ -99,7 +99,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Nhấn 'Lưu mẫu' để tạo mẫu đầu tiên"
-            android:textColor="@color/text_secondary"
+            android:textColor="@color/color_EDF1F6"
             android:textSize="14sp"
             android:layout_marginTop="8dp"
             android:gravity="center" />

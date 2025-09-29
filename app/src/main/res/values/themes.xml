@@ -59,7 +59,7 @@
     <style name="FluidSlider" parent="Widget.Material3.Slider">
         <item name="thumbColor">@color/purple_500</item>
         <item name="trackColorActive">@color/purple_500</item>
-        <item name="trackColorInactive">@color/text_secondary</item>
+        <item name="trackColorInactive">@color/color_EDF1F6</item>
     </style>
     
     <!-- Custom switch styles -->

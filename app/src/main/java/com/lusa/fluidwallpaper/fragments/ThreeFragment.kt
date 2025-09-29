@@ -1,22 +1,19 @@
 package com.lusa.fluidwallpaper.fragments
 
-import android.app.WallpaperManager
 import android.content.Intent
 import android.os.Bundle
-import android.service.wallpaper.WallpaperService
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.lusa.fluidwallpaper.PreviewActivity
-import com.lusa.fluidwallpaper.R
 import com.lusa.fluidwallpaper.databinding.FragmentSettingsBinding
 import com.lusa.fluidwallpaper.viewmodel.FluidViewModel
 import com.lusa.fluidwallpaper.utils.WallpaperUtils
 import com.lusa.fluidwallpaper.dialogs.LockScreenHelpDialog
 
-class SettingsFragment : Fragment() {
+class ThreeFragment : Fragment() {
     
     private var _binding: FragmentSettingsBinding? = null
     private val binding get() = _binding!!

@@ -10,7 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.lusa.fluidwallpaper.databinding.FragmentColorsBinding
 import com.lusa.fluidwallpaper.viewmodel.FluidViewModel
 
-class ColorsFragment : Fragment() {
+class TwoFragment : Fragment() {
     
     private var _binding: FragmentColorsBinding? = null
     private val binding get() = _binding!!

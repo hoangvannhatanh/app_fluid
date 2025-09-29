@@ -11,6 +11,7 @@ import kotlin.math.*
 import kotlin.random.Random
 import com.lusa.fluidwallpaper.model.Particle
 import com.lusa.fluidwallpaper.utils.ColorPreferences
+import android.graphics.BlurMaskFilter
 
 class SimpleFluidSurfaceView @JvmOverloads constructor(
     context: Context,
@@ -37,6 +38,17 @@ class SimpleFluidSurfaceView @JvmOverloads constructor(
     private var time = 0f
     private val particles = mutableListOf<Particle>()
     private val maxParticles = 30
+    
+    // Liquid effect state
+    private data class Blob(
+        var x: Float,
+        var y: Float,
+        var vx: Float,
+        var vy: Float,
+        var radius: Float
+    )
+    private val blobs = mutableListOf<Blob>()
+    private var blobsInitialized = false
     
     // Touch interaction variables
     private val touchEffects = mutableListOf<Particle>()
@@ -197,13 +209,20 @@ class SimpleFluidSurfaceView @JvmOverloads constructor(
                     lastColorUpdateTime = currentTime
                 }
                 
-                // Update and draw particles
-                updateParticles()
-                drawParticles(canvas)
-                
-                // Update and draw touch effects
-                updateTouchEffects()
-                drawTouchEffects(canvas)
+                if (effectType == 1) {
+                    // Liquid effect
+                    if (!blobsInitialized) initializeBlobs()
+                    updateBlobs()
+                    drawLiquid(canvas)
+                } else {
+                    // Particle flow effect
+                    updateParticles()
+                    drawParticles(canvas)
+                    
+                    // Update and draw touch effects
+                    updateTouchEffects()
+                    drawTouchEffects(canvas)
+                }
                 
                 // Update time
                 time += 0.016f
@@ -219,6 +238,14 @@ class SimpleFluidSurfaceView @JvmOverloads constructor(
         repeat(maxParticles) {
             particles.add(createRandomParticle())
         }
+    }
+    
+    private fun initializeBlobs() {
+        blobs.clear()
+        val r = 140f
+        blobs.add(Blob(x = 0.35f, y = 0.5f, vx = 0.002f, vy = -0.0015f, radius = r))
+        blobs.add(Blob(x = 0.65f, y = 0.5f, vx = -0.002f, vy = 0.0012f, radius = r))
+        blobsInitialized = true
     }
     
     private fun createRandomParticle(): Particle {
@@ -320,6 +347,47 @@ class SimpleFluidSurfaceView @JvmOverloads constructor(
             if (particle.y > 1f) particle.y = 0f
         }
     }
+
+    private fun updateBlobs() {
+        // Basic motion
+        blobs.forEach { blob ->
+            // Influence by touch
+            if (isTouching) {
+                val dx = touchX - blob.x
+                val dy = touchY - blob.y
+                val dist = sqrt(dx * dx + dy * dy) + 1e-6f
+                val pull = 0.004f
+                blob.vx += (dx / dist) * pull
+                blob.vy += (dy / dist) * pull
+            }
+            // Random turbulence
+            blob.vx += (Random.nextFloat() - 0.5f) * turbulence * 0.0008f
+            blob.vy += (Random.nextFloat() - 0.5f) * turbulence * 0.0008f
+            // Viscosity drag
+            val drag = (1f - viscosity * 0.02f).coerceIn(0.90f, 0.999f)
+            blob.vx *= drag
+            blob.vy *= drag
+            // Move
+            blob.x += blob.vx * speed
+            blob.y += blob.vy * speed
+            // Bounce at edges
+            if (blob.x < 0.1f || blob.x > 0.9f) blob.vx = -blob.vx
+            if (blob.y < 0.1f || blob.y > 0.9f) blob.vy = -blob.vy
+        }
+        // Soft attraction between blobs
+        if (blobs.size >= 2) {
+            val a = blobs[0]
+            val b = blobs[1]
+            val dx = b.x - a.x
+            val dy = b.y - a.y
+            val dist = sqrt(dx * dx + dy * dy) + 1e-6f
+            val force = (0.0025f / dist).coerceAtMost(0.01f)
+            a.vx += dx * force
+            a.vy += dy * force
+            b.vx -= dx * force
+            b.vy -= dy * force
+        }
+    }
     
     private fun updateTouchEffects() {
         // Remove dead touch effects
@@ -404,6 +472,83 @@ class SimpleFluidSurfaceView @JvmOverloads constructor(
             paint.alpha = ((effect.life ?: 0f) * 80).toInt().coerceIn(0, 80)
             canvas.drawCircle(x, y, radius * 2f, paint)
         }
+    }
+
+    private fun drawLiquid(canvas: Canvas) {
+        val width = canvas.width.toFloat()
+        val height = canvas.height.toFloat()
+
+        // Prepare paints
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            style = Paint.Style.FILL
+            maskFilter = BlurMaskFilter(60f, BlurMaskFilter.Blur.NORMAL)
+        }
+
+        // Colors
+        val c1 = Color.rgb((color1[0] * 255).toInt(), (color1[1] * 255).toInt(), (color1[2] * 255).toInt())
+        val c2 = Color.rgb((color2[0] * 255).toInt(), (color2[1] * 255).toInt(), (color2[2] * 255).toInt())
+
+        // Offscreen for additive glow
+        val offBitmap = Bitmap.createBitmap(canvas.width, canvas.height, Bitmap.Config.ARGB_8888)
+        val offCanvas = Canvas(offBitmap)
+
+        // Draw blobs with radial gradients
+        blobs.forEachIndexed { index, blob ->
+            val cx = blob.x * width
+            val cy = blob.y * height
+            val baseRadius = blob.radius
+            val col = if (index == 0) c1 else c2
+            paint.shader = RadialGradient(
+                cx, cy, baseRadius,
+                intArrayOf(Color.WHITE, col, Color.TRANSPARENT),
+                floatArrayOf(0.0f, 0.4f, 1.0f),
+                Shader.TileMode.CLAMP
+            )
+            paint.alpha = 220
+            offCanvas.drawCircle(cx, cy, baseRadius, paint)
+
+            // Outer glow
+            paint.shader = null
+            paint.color = col
+            paint.alpha = 80
+            offCanvas.drawCircle(cx, cy, baseRadius * 1.4f, paint)
+        }
+
+        // Optional connective bridge when close
+        if (blobs.size >= 2) {
+            val a = blobs[0]
+            val b = blobs[1]
+            val ax = a.x * width
+            val ay = a.y * height
+            val bx = b.x * width
+            val by = b.y * height
+            val d = hypot(bx - ax, by - ay)
+            if (d < (a.radius + b.radius) * 1.1f) {
+                val path = Path()
+                val nx = (by - ay) / (d + 1e-6f)
+                val ny = -(bx - ax) / (d + 1e-6f)
+                val offset = ((a.radius + b.radius) * 0.25f) * (0.6f + 0.4f * sin(time * 2f))
+                path.moveTo(ax + nx * offset, ay + ny * offset)
+                path.cubicTo(
+                    ax, ay,
+                    bx, by,
+                    bx - nx * offset, by - ny * offset
+                )
+                val bridgePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                    style = Paint.Style.STROKE
+                    strokeWidth = (a.radius + b.radius) * 0.15f
+                    color = Color.WHITE
+                    alpha = 160
+                    maskFilter = BlurMaskFilter(40f, BlurMaskFilter.Blur.NORMAL)
+                }
+                offCanvas.drawPath(path, bridgePaint)
+            }
+        }
+
+        // Composite offscreen onto canvas
+        val compose = Paint(Paint.ANTI_ALIAS_FLAG)
+        canvas.drawBitmap(offBitmap, 0f, 0f, compose)
+        offBitmap.recycle()
     }
     
     private fun checkForColorUpdates() {

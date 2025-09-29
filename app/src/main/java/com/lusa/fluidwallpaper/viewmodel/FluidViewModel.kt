@@ -56,8 +56,8 @@ class FluidViewModel(application: Application) : AndroidViewModel(application) {
     val gyroscopeData: LiveData<Triple<Float, Float, Float>> = _gyroscopeData
     
     fun setEffectType(type: Int) {
-        // Only allow Particle Flow (effect type 0)
-        _effectType.value = 0
+        // Allow selecting provided effect type (0: Particle Flow, 1: Liquid)
+        _effectType.value = type.coerceIn(0, 1)
     }
     
     fun setSpeed(speed: Float) {
@@ -148,7 +148,7 @@ class FluidViewModel(application: Application) : AndroidViewModel(application) {
     fun getCurrentPreset(): Preset {
         return Preset(
             name = "Current",
-            effectType = 0, // Always Particle Flow
+            effectType = _effectType.value ?: 0,
             speed = _speed.value ?: 1.0f,
             viscosity = _viscosity.value ?: 1.0f,
             turbulence = _turbulence.value ?: 0.5f,

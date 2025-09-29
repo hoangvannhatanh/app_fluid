@@ -3,6 +3,11 @@ package com.lusa.fluidwallpaper.service
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.BlurMaskFilter
+import android.graphics.Bitmap
+import android.graphics.RadialGradient
+import android.graphics.Shader
+import android.graphics.Path
 import android.service.wallpaper.WallpaperService
 import android.view.MotionEvent
 import android.view.SurfaceHolder
@@ -12,6 +17,7 @@ import android.util.Log
 import android.view.WindowManager
 import android.os.Build
 import android.provider.Settings
+import com.lusa.fluidwallpaper.model.Blob
 import kotlin.random.Random
 import com.lusa.fluidwallpaper.model.Particle
 import com.lusa.fluidwallpaper.utils.ColorPreferences
@@ -52,6 +58,9 @@ class SuperSimpleWallpaperService : WallpaperService() {
         private var viscosity: Float = 1.0f
         private var turbulence: Float = 0.5f
         private var lastKnownSettingsUpdateTime = 0L
+
+        private val blobs = mutableListOf<Blob>()
+        private var blobsInitialized = false
         
         override fun onCreate(surfaceHolder: SurfaceHolder?) {
             super.onCreate(surfaceHolder)
@@ -264,11 +273,15 @@ class SuperSimpleWallpaperService : WallpaperService() {
             val rawViscosity = SettingsPreferences.getViscosity(this@SuperSimpleWallpaperService)
             val rawTurbulence = SettingsPreferences.getTurbulence(this@SuperSimpleWallpaperService)
 
-            effectType = 0 // hiện chỉ hỗ trợ effect 0
+            effectType = rawEffect.coerceIn(0, 1)
             speed = rawSpeed.coerceIn(0.1f, 5.0f)
             viscosity = rawViscosity.coerceIn(0.1f, 3.0f)
             turbulence = rawTurbulence.coerceIn(0.0f, 1.0f)
             lastKnownSettingsUpdateTime = SettingsPreferences.getLastUpdateTime(this@SuperSimpleWallpaperService)
+            if (effectType == 1) {
+                // Ensure blobs re-init when switching to liquid
+                blobsInitialized = false
+            }
         }
         
         private fun checkForSettingsUpdates() {
@@ -318,13 +331,19 @@ class SuperSimpleWallpaperService : WallpaperService() {
                         lastColorUpdateTime = currentTime
                     }
                     
-                    // Update main particles
-                    updateParticles()
-                    drawParticles(canvas)
-                    
-                    // Update touch effects (SEPARATE SYSTEM)
-                    updateTouchEffects()
-                    drawTouchEffects(canvas)
+                    if (effectType == 1) {
+                        if (!blobsInitialized) initializeBlobs()
+                        updateBlobs()
+                        drawLiquid(canvas)
+                    } else {
+                        // Update main particles
+                        updateParticles()
+                        drawParticles(canvas)
+                        
+                        // Update touch effects (SEPARATE SYSTEM)
+                        updateTouchEffects()
+                        drawTouchEffects(canvas)
+                    }
                     
                     time += 0.016f
                 } finally {
@@ -399,6 +418,117 @@ class SuperSimpleWallpaperService : WallpaperService() {
                 if (particle.y < 0f) particle.y = 1f
                 if (particle.y > 1f) particle.y = 0f
             }
+        }
+
+        private fun initializeBlobs() {
+            blobs.clear()
+            val r = 140f
+            blobs.add(Blob(x = 0.35f, y = 0.5f, vx = 0.002f, vy = -0.0015f, radius = r))
+            blobs.add(Blob(x = 0.65f, y = 0.5f, vx = -0.002f, vy = 0.0012f, radius = r))
+            blobsInitialized = true
+        }
+
+        private fun updateBlobs() {
+            blobs.forEach { blob ->
+                if (isTouching) {
+                    val dx = touchX - blob.x
+                    val dy = touchY - blob.y
+                    val dist = kotlin.math.sqrt(dx * dx + dy * dy) + 1e-6f
+                    val pull = 0.004f
+                    blob.vx += (dx / dist) * pull
+                    blob.vy += (dy / dist) * pull
+                }
+                blob.vx += (kotlin.random.Random.nextFloat() - 0.5f) * turbulence * 0.0008f
+                blob.vy += (kotlin.random.Random.nextFloat() - 0.5f) * turbulence * 0.0008f
+                val drag = (1f - viscosity * 0.02f).coerceIn(0.90f, 0.999f)
+                blob.vx *= drag
+                blob.vy *= drag
+                blob.x += blob.vx * speed
+                blob.y += blob.vy * speed
+                if (blob.x < 0.1f || blob.x > 0.9f) blob.vx = -blob.vx
+                if (blob.y < 0.1f || blob.y > 0.9f) blob.vy = -blob.vy
+            }
+            if (blobs.size >= 2) {
+                val a = blobs[0]
+                val b = blobs[1]
+                val dx = b.x - a.x
+                val dy = b.y - a.y
+                val dist = kotlin.math.sqrt(dx * dx + dy * dy) + 1e-6f
+                val force = (0.0025f / dist).coerceAtMost(0.01f)
+                a.vx += dx * force
+                a.vy += dy * force
+                b.vx -= dx * force
+                b.vy -= dy * force
+            }
+        }
+
+        private fun drawLiquid(canvas: Canvas) {
+            val width = canvas.width.toFloat()
+            val height = canvas.height.toFloat()
+
+            val c1 = Color.rgb((color1[0] * 255).toInt(), (color1[1] * 255).toInt(), (color1[2] * 255).toInt())
+            val c2 = Color.rgb((color2[0] * 255).toInt(), (color2[1] * 255).toInt(), (color2[2] * 255).toInt())
+
+            val offBitmap = Bitmap.createBitmap(canvas.width, canvas.height, Bitmap.Config.ARGB_8888)
+            val offCanvas = Canvas(offBitmap)
+
+            val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                style = Paint.Style.FILL
+                maskFilter = BlurMaskFilter(60f, BlurMaskFilter.Blur.NORMAL)
+            }
+
+            blobs.forEachIndexed { index, blob ->
+                val cx = blob.x * width
+                val cy = blob.y * height
+                val baseRadius = blob.radius
+                val col = if (index == 0) c1 else c2
+                paint.shader = RadialGradient(
+                    cx, cy, baseRadius,
+                    intArrayOf(Color.WHITE, col, Color.TRANSPARENT),
+                    floatArrayOf(0.0f, 0.4f, 1.0f),
+                    Shader.TileMode.CLAMP
+                )
+                paint.alpha = 220
+                offCanvas.drawCircle(cx, cy, baseRadius, paint)
+
+                paint.shader = null
+                paint.color = col
+                paint.alpha = 80
+                offCanvas.drawCircle(cx, cy, baseRadius * 1.4f, paint)
+            }
+
+            if (blobs.size >= 2) {
+                val a = blobs[0]
+                val b = blobs[1]
+                val ax = a.x * width
+                val ay = a.y * height
+                val bx = b.x * width
+                val by = b.y * height
+                val d = kotlin.math.hypot(bx - ax, by - ay)
+                if (d < (a.radius + b.radius) * 1.1f) {
+                    val path = Path()
+                    val nx = (by - ay) / (d + 1e-6f)
+                    val ny = -(bx - ax) / (d + 1e-6f)
+                    val offset = ((a.radius + b.radius) * 0.25f) * (0.6f + 0.4f * kotlin.math.sin(time * 2f))
+                    path.moveTo(ax + nx * offset, ay + ny * offset)
+                    path.cubicTo(
+                        ax, ay,
+                        bx, by,
+                        bx - nx * offset, by - ny * offset
+                    )
+                    val bridgePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                        style = Paint.Style.STROKE
+                        strokeWidth = (a.radius + b.radius) * 0.15f
+                        color = Color.WHITE
+                        alpha = 160
+                        maskFilter = BlurMaskFilter(40f, BlurMaskFilter.Blur.NORMAL)
+                    }
+                    offCanvas.drawPath(path, bridgePaint)
+                }
+            }
+
+            canvas.drawBitmap(offBitmap, 0f, 0f, Paint(Paint.ANTI_ALIAS_FLAG))
+            offBitmap.recycle()
         }
         
         private fun updateTouchEffects() {

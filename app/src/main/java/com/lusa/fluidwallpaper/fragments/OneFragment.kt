@@ -21,7 +21,8 @@ class OneFragment : BaseFragment<FragmentOneBinding>(FragmentOneBinding::inflate
     private lateinit var effectsAdapter: EffectsAdapter
     
     private val effects = listOf(
-        Effect(0, "Particle Flow", "Hiệu ứng dòng hạt", R.drawable.ic_effects)
+        Effect(0, "Particle Flow", "Hiệu ứng dòng hạt", R.drawable.ic_effects),
+        Effect(1, "Liquid", "Hiệu ứng chất lỏng", R.drawable.ic_effects)
     )
 
     override fun bindComponent() {

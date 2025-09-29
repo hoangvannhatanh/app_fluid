@@ -189,7 +189,7 @@ class ThreeFragment : BaseFragment<FragmentThreeBinding>(FragmentThreeBinding::i
         val clampedTurbulence = currentPreset.turbulence.coerceIn(0.0f, 1.0f)
         SettingsPreferences.saveSettings(
             requireContext(),
-            0, // chỉ hỗ trợ effect 0 hiện tại
+            viewModel.effectType.value ?: 0,
             clampedSpeed,
             clampedViscosity,
             clampedTurbulence

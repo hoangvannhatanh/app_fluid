@@ -1,0 +1,70 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.FluidWallpaper" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/purple_500</item>
+        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/teal_200</item>
+        <item name="colorSecondaryVariant">@color/teal_700</item>
+        <item name="colorOnSecondary">@color/black</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor" tools:targetApi="l">@color/background_dark</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <!-- Customize your theme here. -->
+        <item name="android:windowBackground">@color/background_dark</item>
+        <item name="colorSurface">@color/surface_dark</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorOnBackground">@color/text_primary</item>
+        <item name="colorError">@color/fluid_red</item>
+        <item name="colorOnError">@color/white</item>
+    </style>
+
+    <style name="Theme.FluidWallpaper.Preview" parent="Theme.FluidWallpaper">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:statusBarColor">@android:color/black</item>
+        <item name="android:navigationBarColor">@android:color/black</item>
+    </style>
+    
+    <!-- Custom button styles -->
+    <style name="FluidButton" parent="Widget.Material3.Button">
+        <item name="android:textColor">@color/white</item>
+        <item name="backgroundTint">@color/purple_500</item>
+        <item name="cornerRadius">8dp</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    
+    <style name="FluidButtonSecondary" parent="FluidButton">
+        <item name="backgroundTint">@color/teal_700</item>
+    </style>
+    
+    <style name="FluidButtonDanger" parent="FluidButton">
+        <item name="backgroundTint">@color/fluid_red</item>
+    </style>
+    
+    <!-- Custom card styles -->
+    <style name="FluidCard" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardBackgroundColor">@color/surface_dark</item>
+        <item name="cardCornerRadius">12dp</item>
+        <item name="cardElevation">4dp</item>
+        <item name="strokeColor">@color/purple_500</item>
+        <item name="strokeWidth">1dp</item>
+    </style>
+    
+    <!-- Custom slider styles -->
+    <style name="FluidSlider" parent="Widget.Material3.Slider">
+        <item name="thumbColor">@color/purple_500</item>
+        <item name="trackColorActive">@color/purple_500</item>
+        <item name="trackColorInactive">@color/text_secondary</item>
+    </style>
+    
+    <!-- Custom switch styles -->
+    <style name="FluidSwitch" parent="Widget.Material3.CompoundButton.Switch">
+        <item name="thumbTint">@color/purple_500</item>
+        <item name="trackTint">@color/purple_500</item>
+    </style>
+</resources>

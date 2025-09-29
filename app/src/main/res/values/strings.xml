@@ -1,0 +1,42 @@
+<resources>
+    <string name="app_name">Fluid Wallpaper</string>
+    
+    <!-- Main Menu -->
+    <string name="menu_effects">Hiệu ứng</string>
+    <string name="menu_colors">Màu sắc</string>
+    <string name="menu_settings">Cài đặt</string>
+    <string name="menu_presets">Mẫu</string>
+    
+    <!-- Effects -->
+    <string name="effect_ripple">Ripple</string>
+    <string name="effect_marbling">Marbling</string>
+    <string name="effect_lava">Lava</string>
+    <string name="effect_neon">Neon Glow</string>
+    <string name="effect_particles">Particle Flow</string>
+    <string name="effect_reaction_diffusion">Reaction-Diffusion</string>
+    
+    <!-- Controls -->
+    <string name="speed">Tốc độ</string>
+    <string name="viscosity">Độ nhớt</string>
+    <string name="turbulence">Nhiễu</string>
+    <string name="intensity">Cường độ</string>
+    
+    <!-- Actions -->
+    <string name="preview">Xem trước</string>
+    <string name="set_wallpaper">Đặt làm hình nền</string>
+    <string name="save_preset">Lưu mẫu</string>
+    <string name="load_preset">Tải mẫu</string>
+    <string name="share_preset">Chia sẻ</string>
+    
+    <!-- Settings -->
+    <string name="battery_save">Tiết kiệm pin</string>
+    <string name="touch_interaction">Tương tác chạm</string>
+    <string name="gyroscope">Cảm biến nghiêng</string>
+    <string name="fps_limit">Giới hạn FPS</string>
+    
+    <!-- Messages -->
+    <string name="wallpaper_set_success">Đã đặt hình nền thành công!</string>
+    <string name="wallpaper_set_error">Lỗi khi đặt hình nền</string>
+    <string name="preset_saved">Đã lưu mẫu</string>
+    <string name="preset_loaded">Đã tải mẫu</string>
+</resources>

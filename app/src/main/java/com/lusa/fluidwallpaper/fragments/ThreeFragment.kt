@@ -205,7 +205,7 @@ class ThreeFragment : BaseFragment<FragmentThreeBinding>(FragmentThreeBinding::i
         // (Tùy chọn) vẫn ghi ra DefaultSharedPreferences cho các phần khác của app nếu có dùng
         val preferences = android.preference.PreferenceManager.getDefaultSharedPreferences(requireContext())
         preferences.edit().apply {
-            putInt("effect_type", 0)
+            putInt("effect_type", viewModel.effectType.value ?: 0)
             putFloat("speed", clampedSpeed)
             putFloat("viscosity", clampedViscosity)
             putFloat("turbulence", clampedTurbulence)

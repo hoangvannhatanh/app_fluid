@@ -12,6 +12,8 @@ import kotlin.random.Random
 import com.lusa.fluidwallpaper.model.Particle
 import com.lusa.fluidwallpaper.utils.ColorPreferences
 import android.graphics.BlurMaskFilter
+import com.lusa.fluidwallpaper.model.Blob
+import com.lusa.fluidwallpaper.model.Star
 
 class SimpleFluidSurfaceView @JvmOverloads constructor(
     context: Context,
@@ -38,17 +40,9 @@ class SimpleFluidSurfaceView @JvmOverloads constructor(
     private var time = 0f
     private val particles = mutableListOf<Particle>()
     private val maxParticles = 30
-    
-    // Liquid effect state
-    private data class Blob(
-        var x: Float,
-        var y: Float,
-        var vx: Float,
-        var vy: Float,
-        var radius: Float
-    )
     private val blobs = mutableListOf<Blob>()
     private var blobsInitialized = false
+    private val stars = mutableListOf<Star>()
     
     // Touch interaction variables
     private val touchEffects = mutableListOf<Particle>()
@@ -199,8 +193,15 @@ class SimpleFluidSurfaceView @JvmOverloads constructor(
         val canvas = surfaceHolder.lockCanvas()
         if (canvas != null) {
             try {
-                // Clear canvas with dark background
-                canvas.drawColor(Color.BLACK)
+                // Background
+                if (effectType == 2) {
+                    // Space-like background
+                    canvas.drawColor(Color.rgb(8, 10, 20))
+                    if (stars.isEmpty()) initializeStars()
+                    drawStars(canvas)
+                } else {
+                    canvas.drawColor(Color.BLACK)
+                }
                 
                 // Check for color updates every 500ms
                 val currentTime = System.currentTimeMillis()
@@ -209,7 +210,7 @@ class SimpleFluidSurfaceView @JvmOverloads constructor(
                     lastColorUpdateTime = currentTime
                 }
                 
-                if (effectType == 1) {
+                if (effectType == 1 || effectType == 2) {
                     // Liquid effect
                     if (!blobsInitialized) initializeBlobs()
                     updateBlobs()
@@ -246,6 +247,29 @@ class SimpleFluidSurfaceView @JvmOverloads constructor(
         blobs.add(Blob(x = 0.35f, y = 0.5f, vx = 0.002f, vy = -0.0015f, radius = r))
         blobs.add(Blob(x = 0.65f, y = 0.5f, vx = -0.002f, vy = 0.0012f, radius = r))
         blobsInitialized = true
+    }
+    
+    private fun initializeStars() {
+        stars.clear()
+        repeat(120) {
+            stars.add(
+                Star(
+                    x = Random.nextFloat(),
+                    y = Random.nextFloat(),
+                    r = 0.6f + Random.nextFloat() * 1.8f,
+                    a = (140 + Random.nextInt(115))
+                )
+            )
+        }
+    }
+    
+    private fun drawStars(canvas: Canvas) {
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+        stars.forEach { s ->
+            paint.color = Color.WHITE
+            paint.alpha = s.a
+            canvas.drawCircle(s.x * canvas.width, s.y * canvas.height, s.r, paint)
+        }
     }
     
     private fun createRandomParticle(): Particle {
@@ -481,7 +505,8 @@ class SimpleFluidSurfaceView @JvmOverloads constructor(
         // Prepare paints
         val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             style = Paint.Style.FILL
-            maskFilter = BlurMaskFilter(60f, BlurMaskFilter.Blur.NORMAL)
+            val blur = if (effectType == 2) 80f else 60f
+            maskFilter = BlurMaskFilter(blur, BlurMaskFilter.Blur.NORMAL)
         }
 
         // Colors
@@ -504,14 +529,14 @@ class SimpleFluidSurfaceView @JvmOverloads constructor(
                 floatArrayOf(0.0f, 0.4f, 1.0f),
                 Shader.TileMode.CLAMP
             )
-            paint.alpha = 220
+            paint.alpha = if (effectType == 2) 240 else 220
             offCanvas.drawCircle(cx, cy, baseRadius, paint)
 
             // Outer glow
             paint.shader = null
             paint.color = col
-            paint.alpha = 80
-            offCanvas.drawCircle(cx, cy, baseRadius * 1.4f, paint)
+            paint.alpha = if (effectType == 2) 120 else 80
+            offCanvas.drawCircle(cx, cy, baseRadius * (if (effectType == 2) 1.6f else 1.4f), paint)
         }
 
         // Optional connective bridge when close
@@ -536,10 +561,10 @@ class SimpleFluidSurfaceView @JvmOverloads constructor(
                 )
                 val bridgePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
                     style = Paint.Style.STROKE
-                    strokeWidth = (a.radius + b.radius) * 0.15f
+                    strokeWidth = (a.radius + b.radius) * (if (effectType == 2) 0.22f else 0.15f)
                     color = Color.WHITE
-                    alpha = 160
-                    maskFilter = BlurMaskFilter(40f, BlurMaskFilter.Blur.NORMAL)
+                    alpha = if (effectType == 2) 200 else 160
+                    maskFilter = BlurMaskFilter(if (effectType == 2) 60f else 40f, BlurMaskFilter.Blur.NORMAL)
                 }
                 offCanvas.drawPath(path, bridgePaint)
             }

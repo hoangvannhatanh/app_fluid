@@ -273,7 +273,7 @@ class SuperSimpleWallpaperService : WallpaperService() {
             val rawViscosity = SettingsPreferences.getViscosity(this@SuperSimpleWallpaperService)
             val rawTurbulence = SettingsPreferences.getTurbulence(this@SuperSimpleWallpaperService)
 
-            effectType = rawEffect.coerceIn(0, 1)
+            effectType = rawEffect.coerceIn(0, 2)
             speed = rawSpeed.coerceIn(0.1f, 5.0f)
             viscosity = rawViscosity.coerceIn(0.1f, 3.0f)
             turbulence = rawTurbulence.coerceIn(0.0f, 1.0f)
@@ -321,7 +321,22 @@ class SuperSimpleWallpaperService : WallpaperService() {
             val canvas = surfaceHolder?.lockCanvas()
             if (canvas != null) {
                 try {
-                    canvas.drawColor(Color.BLACK)
+                    // Background
+                    if (effectType == 2) {
+                        canvas.drawColor(Color.rgb(8, 10, 20))
+                        // draw simple star field inline to differentiate
+                        val starPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+                        starPaint.color = Color.WHITE
+                        repeat(90) {
+                            starPaint.alpha = 140 + kotlin.random.Random.nextInt(115)
+                            val sx = kotlin.random.Random.nextFloat() * canvas.width
+                            val sy = kotlin.random.Random.nextFloat() * canvas.height
+                            val sr = 0.5f + kotlin.random.Random.nextFloat() * 1.6f
+                            canvas.drawCircle(sx, sy, sr, starPaint)
+                        }
+                    } else {
+                        canvas.drawColor(Color.BLACK)
+                    }
                     
                     // Check for color updates every 100ms for more responsive updates
                     val currentTime = System.currentTimeMillis()
@@ -331,7 +346,7 @@ class SuperSimpleWallpaperService : WallpaperService() {
                         lastColorUpdateTime = currentTime
                     }
                     
-                    if (effectType == 1) {
+                    if (effectType == 1 || effectType == 2) {
                         if (!blobsInitialized) initializeBlobs()
                         updateBlobs()
                         drawLiquid(canvas)
@@ -474,7 +489,8 @@ class SuperSimpleWallpaperService : WallpaperService() {
 
             val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
                 style = Paint.Style.FILL
-                maskFilter = BlurMaskFilter(60f, BlurMaskFilter.Blur.NORMAL)
+                val blur = if (effectType == 2) 80f else 60f
+                maskFilter = BlurMaskFilter(blur, BlurMaskFilter.Blur.NORMAL)
             }
 
             blobs.forEachIndexed { index, blob ->
@@ -488,13 +504,13 @@ class SuperSimpleWallpaperService : WallpaperService() {
                     floatArrayOf(0.0f, 0.4f, 1.0f),
                     Shader.TileMode.CLAMP
                 )
-                paint.alpha = 220
+                paint.alpha = if (effectType == 2) 240 else 220
                 offCanvas.drawCircle(cx, cy, baseRadius, paint)
 
                 paint.shader = null
                 paint.color = col
-                paint.alpha = 80
-                offCanvas.drawCircle(cx, cy, baseRadius * 1.4f, paint)
+                paint.alpha = if (effectType == 2) 120 else 80
+                offCanvas.drawCircle(cx, cy, baseRadius * (if (effectType == 2) 1.6f else 1.4f), paint)
             }
 
             if (blobs.size >= 2) {
@@ -518,10 +534,10 @@ class SuperSimpleWallpaperService : WallpaperService() {
                     )
                     val bridgePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
                         style = Paint.Style.STROKE
-                        strokeWidth = (a.radius + b.radius) * 0.15f
+                        strokeWidth = (a.radius + b.radius) * (if (effectType == 2) 0.22f else 0.15f)
                         color = Color.WHITE
-                        alpha = 160
-                        maskFilter = BlurMaskFilter(40f, BlurMaskFilter.Blur.NORMAL)
+                        alpha = if (effectType == 2) 200 else 160
+                        maskFilter = BlurMaskFilter(if (effectType == 2) 60f else 40f, BlurMaskFilter.Blur.NORMAL)
                     }
                     offCanvas.drawPath(path, bridgePaint)
                 }

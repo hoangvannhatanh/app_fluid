@@ -47,8 +47,7 @@
             android:name=".service.SuperSimpleWallpaperService"
             android:exported="true"
             android:permission="android.permission.BIND_WALLPAPER"
-            android:enabled="true"
-            android:process=":wallpaper1">
+            android:enabled="true">
             <intent-filter>
                 <action android:name="android.service.wallpaper.WallpaperService" />
             </intent-filter>

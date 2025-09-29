@@ -443,6 +443,7 @@ class SuperSimpleWallpaperService : WallpaperService() {
             blobsInitialized = true
         }
 
+
         private fun updateBlobs() {
             blobs.forEach { blob ->
                 if (isTouching) {

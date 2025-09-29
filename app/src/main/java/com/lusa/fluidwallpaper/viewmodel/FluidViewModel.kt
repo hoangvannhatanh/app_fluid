@@ -56,7 +56,7 @@ class FluidViewModel(application: Application) : AndroidViewModel(application) {
     val gyroscopeData: LiveData<Triple<Float, Float, Float>> = _gyroscopeData
     
     fun setEffectType(type: Int) {
-        // 0: Particle Flow, 1: Liquid, 2: Glowing Liquid
+        // 0: Particle Flow, 2: Glowing Liquid
         _effectType.value = type.coerceIn(0, 2)
     }
     

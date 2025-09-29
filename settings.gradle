@@ -13,5 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "AppLightTheme"
+rootProject.name = "APPFLUID"
 include ':app'

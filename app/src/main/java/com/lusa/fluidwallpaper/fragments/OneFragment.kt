@@ -7,40 +7,35 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
+import com.lusa.fluidwallpaper.BaseFragment
 import com.lusa.fluidwallpaper.R
 import com.lusa.fluidwallpaper.adapter.EffectsAdapter
-import com.lusa.fluidwallpaper.databinding.FragmentEffectsBinding
+import com.lusa.fluidwallpaper.databinding.FragmentOneBinding
 import com.lusa.fluidwallpaper.model.Effect
 import com.lusa.fluidwallpaper.viewmodel.FluidViewModel
 
-class OneFragment : Fragment() {
-    
-    private var _binding: FragmentEffectsBinding? = null
-    private val binding get() = _binding!!
-    
+class OneFragment : BaseFragment<FragmentOneBinding>(FragmentOneBinding::inflate) {
+
     private lateinit var viewModel: FluidViewModel
     private lateinit var effectsAdapter: EffectsAdapter
     
     private val effects = listOf(
         Effect(0, "Particle Flow", "Hiệu ứng dòng hạt", R.drawable.ic_effects)
     )
-    
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentEffectsBinding.inflate(inflater, container, false)
-        return binding.root
-    }
-    
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        
+
+    override fun bindComponent() {
         viewModel = ViewModelProvider(requireActivity())[FluidViewModel::class.java]
-        
+
         setupRecyclerView()
         setupPreview()
+    }
+
+    override fun bindData() {
+
+    }
+
+    override fun bindEvent() {
+
     }
     
     private fun setupRecyclerView() {
@@ -97,10 +92,5 @@ class OneFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         binding.previewView.pause()
-    }
-    
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 }

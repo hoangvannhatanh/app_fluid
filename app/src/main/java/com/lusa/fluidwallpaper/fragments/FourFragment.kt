@@ -10,38 +10,32 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
+import com.lusa.fluidwallpaper.BaseFragment
 import com.lusa.fluidwallpaper.adapter.PresetsAdapter
-import com.lusa.fluidwallpaper.databinding.FragmentPresetsBinding
+import com.lusa.fluidwallpaper.databinding.FragmentFourBinding
 import com.lusa.fluidwallpaper.model.Preset
 import com.lusa.fluidwallpaper.viewmodel.FluidViewModel
 
-class FourFragment : Fragment() {
-    
-    private var _binding: FragmentPresetsBinding? = null
-    private val binding get() = _binding!!
-    
+class FourFragment : BaseFragment<FragmentFourBinding>(FragmentFourBinding::inflate) {
     private lateinit var viewModel: FluidViewModel
     private lateinit var presetsAdapter: PresetsAdapter
-    
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentPresetsBinding.inflate(inflater, container, false)
-        return binding.root
-    }
-    
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        
+
+    override fun bindComponent() {
         viewModel = ViewModelProvider(requireActivity())[FluidViewModel::class.java]
-        
+
         setupRecyclerView()
         setupButtons()
         setupPreview()
     }
-    
+
+    override fun bindData() {
+
+    }
+
+    override fun bindEvent() {
+
+    }
+
     private fun setupRecyclerView() {
         presetsAdapter = PresetsAdapter(
             onPresetClick = { preset ->
@@ -199,10 +193,5 @@ class FourFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         binding.previewView.pause()
-    }
-    
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 }

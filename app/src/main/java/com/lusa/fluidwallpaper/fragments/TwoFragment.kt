@@ -7,35 +7,30 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import com.lusa.fluidwallpaper.databinding.FragmentColorsBinding
+import com.lusa.fluidwallpaper.BaseFragment
+import com.lusa.fluidwallpaper.databinding.FragmentTwoBinding
 import com.lusa.fluidwallpaper.viewmodel.FluidViewModel
 
-class TwoFragment : Fragment() {
-    
-    private var _binding: FragmentColorsBinding? = null
-    private val binding get() = _binding!!
-    
+class TwoFragment : BaseFragment<FragmentTwoBinding>(FragmentTwoBinding::inflate) {
     private lateinit var viewModel: FluidViewModel
-    
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentColorsBinding.inflate(inflater, container, false)
-        return binding.root
-    }
-    
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        
+
+
+    override fun bindComponent() {
         viewModel = ViewModelProvider(requireActivity())[FluidViewModel::class.java]
-        
+
         setupColorPickers()
         setupPreview()
         setupGradientToggle()
     }
-    
+
+    override fun bindData() {
+
+    }
+
+    override fun bindEvent() {
+
+    }
+
     private fun setupColorPickers() {
         // Color 1 picker
         binding.colorPicker1.setOnColorSelectedListener { color ->
@@ -141,10 +136,5 @@ class TwoFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         binding.previewView.pause()
-    }
-    
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 }

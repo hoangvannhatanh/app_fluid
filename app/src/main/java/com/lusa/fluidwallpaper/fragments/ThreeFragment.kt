@@ -7,38 +7,37 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.lusa.fluidwallpaper.BaseFragment
 import com.lusa.fluidwallpaper.PreviewActivity
-import com.lusa.fluidwallpaper.databinding.FragmentSettingsBinding
+import com.lusa.fluidwallpaper.databinding.FragmentThreeBinding
 import com.lusa.fluidwallpaper.viewmodel.FluidViewModel
 import com.lusa.fluidwallpaper.utils.WallpaperUtils
-import com.lusa.fluidwallpaper.dialogs.LockScreenHelpDialog
 
-class ThreeFragment : Fragment() {
-    
-    private var _binding: FragmentSettingsBinding? = null
-    private val binding get() = _binding!!
-    
+class ThreeFragment : BaseFragment<FragmentThreeBinding>(FragmentThreeBinding::inflate) {
     private lateinit var viewModel: FluidViewModel
-    
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentSettingsBinding.inflate(inflater, container, false)
-        return binding.root
-    }
     
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
+
+    }
+
+    override fun bindComponent() {
         viewModel = ViewModelProvider(requireActivity())[FluidViewModel::class.java]
-        
+
         setupControls()
         setupPreview()
         setupButtons()
     }
-    
+
+    override fun bindData() {
+
+    }
+
+    override fun bindEvent() {
+
+    }
+
     private fun setupControls() {
         // Speed control
         binding.speedSlider.addOnChangeListener { _, value, fromUser ->
@@ -148,24 +147,6 @@ class ThreeFragment : Fragment() {
             setWallpaper()
         }
         
-        // New wallpaper buttons
-        binding.setHomeWallpaperButton.setOnClickListener {
-            setHomeScreenWallpaper()
-        }
-        
-        binding.setLockWallpaperButton.setOnClickListener {
-            setLockScreenWallpaper()
-        }
-        
-        binding.setBothWallpaperButton.setOnClickListener {
-            setBothScreenWallpaper()
-        }
-        
-        // Help button
-        binding.helpButton.setOnClickListener {
-            showLockScreenHelp()
-        }
-        
         // Touch interaction setup
         binding.previewView.setTouchCallback { x, y ->
             if (viewModel.touchInteraction.value == true) {
@@ -194,59 +175,6 @@ class ThreeFragment : Fragment() {
                 android.widget.Toast.LENGTH_LONG
             ).show()
         }
-    }
-    
-    private fun setHomeScreenWallpaper() {
-        try {
-            saveCurrentSettings()
-            WallpaperUtils.setHomeScreenWallpaper(requireContext())
-        } catch (e: Exception) {
-            android.widget.Toast.makeText(
-                context,
-                "Lỗi: ${e.message}",
-                android.widget.Toast.LENGTH_LONG
-            ).show()
-        }
-    }
-    
-    private fun setLockScreenWallpaper() {
-        try {
-            saveCurrentSettings()
-            
-            if (WallpaperUtils.supportsLockScreenWallpaper()) {
-                WallpaperUtils.setLockScreenWallpaper(requireContext())
-            } else {
-                android.widget.Toast.makeText(
-                    context,
-                    "Thiết bị không hỗ trợ đặt hình nền riêng cho màn hình khóa. ${WallpaperUtils.getLockScreenInstructions()}",
-                    android.widget.Toast.LENGTH_LONG
-                ).show()
-            }
-        } catch (e: Exception) {
-            android.widget.Toast.makeText(
-                context,
-                "Lỗi: ${e.message}",
-                android.widget.Toast.LENGTH_LONG
-            ).show()
-        }
-    }
-    
-    private fun setBothScreenWallpaper() {
-        try {
-            saveCurrentSettings()
-            WallpaperUtils.setBothScreenWallpaper(requireContext())
-        } catch (e: Exception) {
-            android.widget.Toast.makeText(
-                context,
-                "Lỗi: ${e.message}",
-                android.widget.Toast.LENGTH_LONG
-            ).show()
-        }
-    }
-    
-    private fun showLockScreenHelp() {
-        val dialog = LockScreenHelpDialog.newInstance()
-        dialog.show(parentFragmentManager, "LockScreenHelpDialog")
     }
     
     private fun saveCurrentSettings() {
@@ -280,10 +208,5 @@ class ThreeFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         binding.previewView.pause()
-    }
-    
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 }

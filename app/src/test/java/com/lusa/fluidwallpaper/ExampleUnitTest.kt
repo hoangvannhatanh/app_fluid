@@ -1,4 +1,4 @@
-package com.lusa.applighttheme
+package com.lusa.fluidwallpaper
 
 import org.junit.Test
 
